@@ -1,0 +1,6 @@
+---
+- name: Configuring tomcat8 using roles
+  hosts: all
+  roles:
+   - tomcat8
+   

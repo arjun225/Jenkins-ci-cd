@@ -1,0 +1,95 @@
+ansible roles
+==================
+role makes the code modular.
+roles are available for every service..waht wever is required for that service is present in that role
+it is self sustained contianer
+eg role for apache
+
+cd /etc/ansible
+cd roles
+no roles yes..role is a predefined structure to configure any app
+cd /etc/ansible/roles
+ansible-galaxy init apache2 --offline
+tree apache2
+
+execution starts from main.yml which is present in every folder
+cd apache2
+cd tasks
+vim main.yml
+- include: install.yml
+- include: configure.yml
+- include: check_url_response.yml
+:wq
+
+vim install.yml
+---
+#installing apache2 package code
+- name: install apache2
+  apt:
+   name: apache2
+   state: latest
+:wq
+
+vim configure.yml
+---
+#copying index.html file
+- name:copy index.html
+  copy:
+   src: index.html
+   dest: /var/www/html/index.html
+  notify:
+   restart_apache2 
+ :wq
+
+vim check_url_response.yml
+---
+#check url reponse of apache2 on all the managed nodes
+- name: Check url response
+  uri:
+   url: "{{item}}"
+   status: 200
+  with_items:
+   - http://172.31.18.210
+   - http://172.31.31.227
+...
+
+Go to files folder to create the index.html file
+cd ..
+cd files
+sudo vim index.html
+<html>
+  <body>
+     <h1>This is IntelliQ</h1>
+  </body>
+</html>
+Save AND quit
+
+Go to handlers folder
+cd ..
+cd handlers
+sudo vim main.yml
+---
+# handlers file for apache2
+- name: restart_apache2
+  service:
+   name: apache2
+   state: restarted
+...
+
+cREATE the parent playbook to call the roles
+cd ..
+cd ..
+vim apache_role.yml
+---
+- name: Implementing roles for apache2
+  hosts: all
+  roles:
+   - apache2
+...
+
+
+To execute the role
+ansible-playbook apache_role.yml -b
+
+
+
